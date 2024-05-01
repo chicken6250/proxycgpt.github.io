@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DriveMad</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+    }
+    canvas {
+      display: block;
+      width: 100vw;
+      height: 100vh;
+    }
+    .controls {
+      position: fixed;
+      bottom: 20px;
+      width: 100%;
+      text-align: center;
+    }
+    .button {
+      display: inline-block;
+      padding: 10px 20px;
+      background-color: #4CAF50;
+      color: white;
+      text-align: center;
+      font-size: 16px;
+      margin: 0 10px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="gameCanvas"></canvas>
+  <div class="controls">
+    <div class="button" id="leftButton">Left</div>
+    <div class="button" id="rightButton">Right</div>
+    <div class="button" id="pauseButton">Pause</div>
+  </div>
+  <div id="countdown" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 48px;"></div>
+  <script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    let carX = canvas.width / 2;
+    const carY = canvas.height - 80;
+    const carWidth = 40;
+    const carHeight = 80;
+    const carSpeed = 8; // Faster car movement
+    let level = 1;
+    let obstacles = [];
+    let score = 0;
+    let gameSpeed = 0.5; // Slower obstacle movement
+    let paused = false;
+    let countdownValue = 3;
+
+    function drawCar() {
+      ctx.fillStyle = 'red';
+      ctx.fillRect(carX, carY, carWidth, carHeight);
+    }
+
+    function clearCanvas() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+
+    function update() {
+      clearCanvas();
+      drawCar();
+      drawObstacles();
+      drawScore();
+      drawCountdown();
+    }
+
+    function moveCar(direction) {
+      if (!paused) {
+        if (direction === 'left') {
+          carX -= carSpeed;
+        } else if (direction === 'right') {
+          carX += carSpeed;
+        }
+        // Keep the car within the canvas bounds
+        if (carX < 0) {
+          carX = 0;
+        } else if (carX > canvas.width - carWidth) {
+          carX = canvas.width - carWidth;
+        }
+      }
+    }
+
+    function drawObstacles() {
+      for (let obstacle of obstacles) {
+        ctx.fillStyle = obstacle.color;
+        ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+      }
+    }
+
+    function generateObstacles() {
+      obstacles.push({
+        x: Math.random() * (canvas.width - 200),
+        y: -20,
+        width: 200,
+        height: 20,
+        speed: Math.random() * (level * 0.5) + 1, // Speed increases with level
+        color: 'blue'
+      });
+      if (Math.random() < 0.1) {
+        obstacles.push({
+          x: Math.random() * (canvas.width - 100),
+          y: -20,
+          width: 100,
+          height: 20,
+          speed: Math.random() * (level * 0.5) + 1,
+          color: 'green'
+        });
+      }
+    }
+
+    function moveObstacles() {
+      for (let obstacle of obstacles) {
+        obstacle.y += obstacle.speed * gameSpeed;
+      }
+    }
+
+    function checkCollision() {
+      for (let obstacle of obstacles) {
+        if (
+          (carX < obstacle.x + obstacle.width && carX + carWidth > obstacle.x &&
+          carY < obstacle.y + obstacle.height && carY + carHeight > obstacle.y)
+        ) {
+          alert('Game Over! You hit an obstacle.');
+          resetGame();
+          return;
+        }
+      }
+    }
+
+    function drawScore() {
+      ctx.fillStyle = 'black';
+      ctx.font = '20px Arial';
+      ctx.fillText(`Score: ${score}`, 10, 30);
+    }
+
+    function increaseScore() {
+      score += 10;
+    }
+
+    function resetGame() {
+      carX = canvas.width / 2;
+      obstacles = [];
+      level = 1;
+      score = 0;
+      gameSpeed = 0.5;
+      countdownValue = 3;
+      setTimeout(startCountdown, 1000);
+    }
+
+    function togglePause() {
+      paused = !paused;
+    }
+
+    document.getElementById('leftButton').addEventListener('touchstart', () => {
+      moveCar('left');
+    });
+
+    document.getElementById('rightButton').addEventListener('touchstart', () => {
+      moveCar('right');
+    });
+
+    document.getElementById('pauseButton').addEventListener('click', () => {
+      togglePause();
+    });
+
+    function startCountdown() {
+      if (countdownValue > 0) {
+        document.getElementById('countdown').innerText = countdownValue;
+        countdownValue--;
+        setTimeout(startCountdown, 1000);
+      } else {
+        document.getElementById('countdown').innerText = '';
+        gameLoop();
+      }
+    }
+
+    function drawCountdown() {
+      if (paused) {
+        ctx.fillStyle = 'black';
+        ctx.font = '48px Arial';
+        ctx.fillText('Paused', canvas.width / 2 - 80, canvas.height / 2);
+      } else if (countdownValue > 0) {
+        ctx.fillStyle = 'black';
+        ctx.font = '48px Arial';
+        ctx.fillText(countdownValue, canvas.width / 2 - 20, canvas.height / 2);
+      }
+    }
+
+    function gameLoop() {
+      if (!paused) {
+        update();
+        moveObstacles();
+        checkCollision();
+        if (Math.random() < 0.02) { // Adjust obstacle generation frequency
+          generateObstacles();
+        }
+        increaseScore();
+        if (score % 100 === 0 && score !== 0) { // Increase level every 100 points
+          level++;
+          gameSpeed += 0.05; // Increase game speed with level
+        }
+      }
+      requestAnimationFrame(gameLoop);
+    }
+
+    startCountdown();
+  </script>
+</body>
+</html>
