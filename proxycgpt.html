@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Proxy Browser</title>
+<style>
+    body, html {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+    }
+    #proxyFrame {
+        width: 100%;
+        height: calc(100% - 40px); /* Adjust height for navigation bar */
+        border: none;
+    }
+    #navbar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        background-color: #333;
+        padding: 10px;
+        box-sizing: border-box;
+        z-index: 9999;
+    }
+    #navbar input[type="text"] {
+        width: calc(100% - 100px);
+        padding: 5px;
+        border: none;
+        border-radius: 5px;
+    }
+    #navbar input[type="submit"] {
+        width: 80px;
+        padding: 5px;
+        border: none;
+        border-radius: 5px;
+        background-color: #007bff;
+        color: white;
+        cursor: pointer;
+    }
+</style>
+</head>
+<body>
+
+<div id="navbar">
+    <form id="urlForm">
+        <input type="text" id="urlInput" placeholder="Enter URL">
+        <input type="submit" value="Go">
+    </form>
+</div>
+
+<iframe id="proxyFrame" src="https://example.com"></iframe>
+
+<script>
+    // Function to load a new page in the proxy frame
+    function loadPage(url) {
+        document.getElementById('proxyFrame').src = url;
+    }
+
+    // Function to handle form submission and load the entered URL
+    document.getElementById('urlForm').addEventListener('submit', function(event) {
+        event.preventDefault();
+        var url = document.getElementById('urlInput').value;
+        loadPage(url);
+    });
+
+    // Function to handle link clicks and prevent default behavior
+    function handleLinkClick(event) {
+        event.preventDefault();
+        var url = event.target.href;
+        loadPage(url);
+    }
+
+    // Add event listeners to all links in the proxy frame
+    var proxyFrame = document.getElementById('proxyFrame').contentWindow.document;
+    var links = proxyFrame.getElementsByTagName('a');
+    for (var i = 0; i < links.length; i++) {
+        links[i].addEventListener('click', handleLinkClick);
+    }
+</script>
+
+</body>
+</html>
