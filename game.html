@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DriveMad</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+    }
+    canvas {
+      display: block;
+    }
+    .controls {
+      position: fixed;
+      bottom: 20px;
+      width: 100%;
+      text-align: center;
+    }
+    .button {
+      display: inline-block;
+      padding: 10px 20px;
+      background-color: #4CAF50;
+      color: white;
+      text-align: center;
+      font-size: 16px;
+      margin: 0 10px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="gameCanvas" width="800" height="600"></canvas>
+  <div class="controls">
+    <div class="button" id="leftButton">Left</div>
+    <div class="button" id="rightButton">Right</div>
+  </div>
+  <script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+
+    let carX = canvas.width / 2;
+    const carY = canvas.height - 80;
+    const carWidth = 40;
+    const carHeight = 80;
+    const carSpeed = 5;
+    let level = 1;
+
+    function drawCar() {
+      ctx.fillStyle = 'red';
+      ctx.fillRect(carX, carY, carWidth, carHeight);
+    }
+
+    function clearCanvas() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+
+    function update() {
+      clearCanvas();
+      drawCar();
+    }
+
+    function moveCar(direction) {
+      if (direction === 'left') {
+        carX -= carSpeed;
+      } else if (direction === 'right') {
+        carX += carSpeed;
+      }
+    }
+
+    function drawObstacles() {
+      ctx.fillStyle = 'blue';
+      ctx.fillRect(100, 100 + level * 50, 200, 20);
+      ctx.fillRect(500, 300 + level * 50, 200, 20);
+    }
+
+    function checkCollision() {
+      const obstacle1X = 100;
+      const obstacle1Y = 100 + level * 50;
+      const obstacle2X = 500;
+      const obstacle2Y = 300 + level * 50;
+
+      if (
+        (carX < obstacle1X + 200 && carX + carWidth > obstacle1X && carY < obstacle1Y + 20 && carY + carHeight > obstacle1Y) ||
+        (carX < obstacle2X + 200 && carX + carWidth > obstacle2X && carY < obstacle2Y + 20 && carY + carHeight > obstacle2Y)
+      ) {
+        alert('Game Over! You hit an obstacle.');
+        resetGame();
+      }
+    }
+
+    function resetGame() {
+      carX = canvas.width / 2;
+      level = 1;
+    }
+
+    document.getElementById('leftButton').addEventListener('touchstart', () => {
+      moveCar('left');
+    });
+
+    document.getElementById('rightButton').addEventListener('touchstart', () => {
+      moveCar('right');
+    });
+
+    function gameLoop() {
+      update();
+      drawObstacles();
+      checkCollision();
+      requestAnimationFrame(gameLoop);
+    }
+
+    gameLoop();
+  </script>
+</body>
+</html>
