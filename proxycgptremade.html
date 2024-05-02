@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Proxy Browser</title>
+<style>
+    body, html {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        overflow: hidden;
+    }
+    #proxyFrame {
+        width: 100%;
+        height: calc(100% - 40px); /* Adjusted for control panel */
+        border: none;
+    }
+    #controlPanel {
+        width: 100%;
+        height: 40px;
+        background-color: #f0f0f0;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        z-index: 999;
+        padding: 10px;
+        box-sizing: border-box;
+    }
+    #controlPanel input[type="text"] {
+        width: 200px;
+        padding: 5px;
+        margin-right: 10px;
+    }
+    #controlPanel input[type="button"] {
+        padding: 5px 10px;
+        cursor: pointer;
+    }
+</style>
+</head>
+<body>
+    <iframe id="proxyFrame" src="https://example.com"></iframe>
+
+    <div id="controlPanel">
+        <input type="text" id="websiteInput" placeholder="Enter website URL">
+        <input type="button" id="goButton" value="Go">
+        <input type="button" id="fullscreenButton" value="Fullscreen">
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const proxyFrame = document.getElementById('proxyFrame');
+            const websiteInput = document.getElementById('websiteInput');
+            const goButton = document.getElementById('goButton');
+            const fullscreenButton = document.getElementById('fullscreenButton');
+
+            // Function to load a website into the iframe
+            function loadWebsite(url) {
+                proxyFrame.src = url;
+            }
+
+            // Go button click event
+            goButton.addEventListener('click', function() {
+                const url = websiteInput.value.trim();
+                if (url !== '') {
+                    loadWebsite(url);
+                }
+            });
+
+            // Fullscreen button click event
+            fullscreenButton.addEventListener('click', function() {
+                if (document.fullscreenElement) {
+                    document.exitFullscreen();
+                } else {
+                    document.documentElement.requestFullscreen();
+                }
+            });
+
+            proxyFrame.onload = function() {
+                // Override links to load within the iframe
+                const links = proxyFrame.contentDocument.getElementsByTagName('a');
+                for (let i = 0; i < links.length; i++) {
+                    links[i].addEventListener('click', function(event) {
+                        event.preventDefault();
+                        const url = this.getAttribute('href');
+                        loadWebsite(url);
+                    });
+                }
+            };
+        });
+    </script>
+</body>
+</html>
